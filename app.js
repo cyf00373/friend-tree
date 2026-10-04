@@ -1,7 +1,7 @@
 /* 朋友關係樹 v1 — 資料只存在這支手機（localStorage），可匯出／匯入備份 */
 (() => {
   "use strict";
-  const APP_VERSION = "1.0.0";
+  const APP_VERSION = "1.0.1";
   const LS_KEY = "friend-tree-v1";
   const LS_BACKUP = "friend-tree-last-backup";
 
@@ -71,7 +71,7 @@
 
   /* ---------- form ---------- */
   const form = $("#form");
-  $("#f-zodiac").innerHTML = `<option value="">（依生日自動帶入）</option>` + ZODIAC.map(z => `<option>${z}</option>`).join("");
+  $("#f-zodiac").innerHTML = `<option value="">自動帶入</option>` + ZODIAC.map(z => `<option>${z}</option>`).join("");
   $("#f-birthday").addEventListener("change", e => { if (!zodiacTouched) $("#f-zodiac").value = zodiacOf(e.target.value); });
   $("#f-zodiac").addEventListener("change", () => { zodiacTouched = true; });
 
