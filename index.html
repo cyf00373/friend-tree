@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>朋友關係樹</title>
+<meta name="theme-color" content="#0E7A62">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="朋友關係樹">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-64.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- Main app -->
+<div class="app" id="app">
+  <header class="top">
+    <h1>朋友關係樹</h1>
+    <button class="menu-btn" id="meBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>備份</button>
+  </header>
+
+  <section id="tab-add" role="tabpanel">
+    <h2 class="sec" id="formTitle">新增朋友</h2>
+    <form class="form" id="form" autocomplete="off" novalidate>
+      <div class="editing-bar" id="editingBar" hidden>
+        <span>正在編輯：<b id="editingName"></b></span>
+        <button type="button" class="btn sm" id="cancelEdit">取消編輯</button>
+      </div>
+      <div class="field">
+        <label for="f-name">名字 <b>*</b></label>
+        <input id="f-name" name="name" required placeholder="例如：王小明">
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-birthday">生日</label><input id="f-birthday" name="birthday" type="date"></div>
+        <div class="field"><label for="f-zodiac">星座</label><select id="f-zodiac" name="zodiac"></select></div>
+      </div>
+      <div class="field"><label for="f-interests">興趣</label><textarea id="f-interests" name="interests" placeholder="例如：登山、咖啡、看電影"></textarea></div>
+      <div class="row2">
+        <div class="field"><label for="f-hometown">哪裡人</label><input id="f-hometown" name="hometown" placeholder="例如：台南"></div>
+        <div class="field"><label for="f-residence">住哪邊</label><input id="f-residence" name="residence" placeholder="例如：新北板橋"></div>
+      </div>
+      <div class="field">
+        <label for="f-referrer">誰帶來的朋友</label>
+        <select id="f-referrer" name="referrerId"></select>
+        <span class="hint">這個欄位決定關係圖上的連線</span>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-upline">上手白金</label><input id="f-upline" name="upline" list="friendNames" placeholder="輸入或選擇名字"></div>
+        <div class="field"><label for="f-distId">直銷商編號</label><input id="f-distId" name="distributorId" placeholder="例如：TW123456"></div>
+      </div>
+      <datalist id="friendNames"></datalist>
+      <div class="actions">
+        <button type="submit" class="btn primary" id="saveBtn">新增朋友</button>
+        <button type="reset" class="btn">清空</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="tab-list" role="tabpanel" hidden>
+    <h2 class="sec" id="listTitle">朋友清單</h2>
+    <div class="banner" id="backupBanner" hidden><span id="backupMsg"></span><button class="btn sm" id="backupNow">立即備份</button></div>
+    <input class="search" id="search" type="search" placeholder="搜尋名字、住哪邊、興趣…">
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="tab-tree" role="tabpanel" hidden>
+    <div class="treebar">
+      <h2 class="sec" style="margin:0">關係圖 · 點名字看詳細資料</h2>
+      <div class="zoom">
+        <button class="btn sm" id="zoomOut" aria-label="縮小">－</button>
+        <button class="btn sm" id="zoomReset">100%</button>
+        <button class="btn sm" id="zoomIn" aria-label="放大">＋</button>
+      </div>
+    </div>
+    <div class="treewrap"><div class="tree" id="tree"></div></div>
+  </section>
+</div>
+
+<nav class="tabs" role="tablist" id="tabs">
+  <div class="in">
+    <button role="tab" data-tab="add" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="8" r="4"/><path d="M3 20c0-3.5 3-6 7-6 1.4 0 2.7.3 3.8.8"/><path d="M18 14v6M15 17h6"/></svg>新增朋友</button>
+    <button role="tab" data-tab="list" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/></svg>朋友卡片</button>
+    <button role="tab" data-tab="tree" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="5" rx="1.5"/><rect x="2.5" y="16.5" width="6" height="5" rx="1.5"/><rect x="15.5" y="16.5" width="6" height="5" rx="1.5"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/></svg>關係圖</button>
+  </div>
+</nav>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div id="sheetHost"></div>
+<div id="toastHost"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
