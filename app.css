@@ -127,3 +127,12 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
 .menu-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
 .menu-btn svg{width:16px;height:16px}
 .banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--warn-soft);border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+
+/* v1.0.1：生日、星座欄位在手機上和其他欄位同大小 */
+.row2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:380px){.row2{grid-template-columns:minmax(0,1fr)}}
+input,select{-webkit-appearance:none;appearance:none;height:46px;line-height:1.2;max-width:100%;margin:0}
+input[type="date"]{display:block;min-height:46px;text-align:left}
+input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type="date"]::-webkit-calendar-picker-indicator{opacity:.6}
+select{padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A9792' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
