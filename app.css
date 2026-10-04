@@ -136,3 +136,24 @@ input[type="date"]{display:block;min-height:46px;text-align:left}
 input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
 input[type="date"]::-webkit-calendar-picker-indicator{opacity:.6}
 select{padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A9792' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+/* v1.1：直銷商切換、點亮、組織匯入 */
+.lbl{font-size:13px;color:var(--muted);font-weight:500}
+.toggle{display:flex;align-items:center;gap:10px;height:46px;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:0 12px;font-size:15px;color:var(--muted);text-align:left;width:100%}
+.toggle .knob{width:38px;height:22px;border-radius:11px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.toggle .knob::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.toggle[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink);font-weight:500}
+.toggle[aria-pressed="true"] .knob{background:var(--accent)}
+.toggle[aria-pressed="true"] .knob::after{transform:translateX(16px)}
+.card.dist{background:var(--accent-soft);border-color:var(--accent)}
+.badge{font-family:var(--f-body);font-size:12px;font-weight:700;background:var(--accent);color:var(--accent-ink);padding:2px 9px;border-radius:999px}
+.node.dist{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.node.dist .s{color:var(--accent-ink);opacity:.85}
+.legend{display:inline-flex;align-items:center;gap:4px;margin-left:6px;letter-spacing:0}
+.legend i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:inline-block}
+.choice{display:grid;gap:8px;margin-top:14px}
+.radio{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;cursor:pointer}
+.radio input{width:18px;height:18px;margin-top:2px;flex:none;-webkit-appearance:auto;appearance:auto}
+.radio:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.radio small{display:block;color:var(--muted);font-size:12px}
+.from{font-size:12px;color:var(--muted);margin-top:-6px}

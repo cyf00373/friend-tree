@@ -23,7 +23,7 @@
 <div class="app" id="app">
   <header class="top">
     <h1>朋友關係樹</h1>
-    <button class="menu-btn" id="meBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>備份</button>
+    <button class="menu-btn" id="meBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>匯出／匯入</button>
   </header>
 
   <section id="tab-add" role="tabpanel">
@@ -51,9 +51,10 @@
         <select id="f-referrer" name="referrerId"></select>
         <span class="hint">這個欄位決定關係圖上的連線</span>
       </div>
+      <div class="field"><label for="f-upline">上手白金</label><input id="f-upline" name="upline" list="friendNames" placeholder="輸入或選擇名字"></div>
       <div class="row2">
-        <div class="field"><label for="f-upline">上手白金</label><input id="f-upline" name="upline" list="friendNames" placeholder="輸入或選擇名字"></div>
-        <div class="field"><label for="f-distId">直銷商編號</label><input id="f-distId" name="distributorId" placeholder="例如：TW123456"></div>
+        <div class="field"><span class="lbl" id="distLbl">是不是直銷商</span><button type="button" class="toggle" id="distToggle" aria-pressed="false" aria-labelledby="distLbl"><span class="knob"></span><span class="ttxt">不是</span></button></div>
+        <div class="field" id="distIdField" hidden><label for="f-distId">直銷商編號</label><input id="f-distId" name="distributorId" placeholder="例如：TW123456"></div>
       </div>
       <datalist id="friendNames"></datalist>
       <div class="actions">
@@ -72,7 +73,7 @@
 
   <section id="tab-tree" role="tabpanel" hidden>
     <div class="treebar">
-      <h2 class="sec" style="margin:0">關係圖 · 點名字看詳細資料</h2>
+      <h2 class="sec" style="margin:0">關係圖 · 點名字看詳細資料 <span class="legend"><i></i>直銷商</span></h2>
       <div class="zoom">
         <button class="btn sm" id="zoomOut" aria-label="縮小">－</button>
         <button class="btn sm" id="zoomReset">100%</button>
