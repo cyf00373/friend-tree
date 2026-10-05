@@ -2,7 +2,7 @@
    可匯出自己的組織，上線匯入後接到他的樹上；重新匯入可覆蓋舊組織 */
 (() => {
   "use strict";
-  const APP_VERSION = "1.1.0";
+  const APP_VERSION = "1.2.0";
   const LS_KEY = "friend-tree-v1";
   const LS_BACKUP = "friend-tree-last-backup";
   const LS_OWNER = "friend-tree-owner";
@@ -474,7 +474,128 @@
   }
   window.addEventListener("storage", e => { if (e.key === LS_KEY) { try { friends = JSON.parse(e.newValue || "[]").map(clean); } catch (x) {} renderAll(); } });
 
-  setDist(false);
+    /* ===== v1.2 新增：我的資料 ===== */
+  const LS_ME = "friend-tree-me", ME = "__me";
+  function getMe() {
+    let m = {};
+    try { m = JSON.parse(ls.get(LS_ME, "{}")) || {}; } catch (e) {}
+    return clean({ ...m, id: ME, name: ownerName() || m.name || "" });
+  }
+  function saveMe(m) {
+    const o = clean({ ...m, id: ME }); delete o.referrerId;
+    ls.set(LS_OWNER, o.name);
+    return ls.set(LS_ME, JSON.stringify(o));
+  }
+  const refField = () => $("#f-referrer").closest(".field");
+
+  // 點關係圖最上面的「我」就打開我的資料
+  $("#tree").addEventListener("click", e => { if (e.target.closest(".node.me")) openDetail(ME); });
+
+  // 關係圖的「我」顯示年紀、住哪邊，是直銷商就點亮
+  const _renderTree = renderTree;
+  renderTree = function () {
+    _renderTree();
+    const me = getMe(), el = $("#tree .node.me"); if (!el) return;
+    const age = ageOf(me.birthday);
+    el.querySelector(".s").textContent = [age !== null ? age + " 歲" : "", me.residence || "", friends.length + " 位朋友"].filter(Boolean).join(" · ");
+    el.classList.toggle("dist", !!me.isDistributor);
+    el.style.cursor = "pointer";
+  };
+
+  // 我的資料頁
+  const _openDetail = openDetail;
+  openDetail = function (id, confirming) {
+    if (id !== ME) return _openDetail(id, confirming);
+    const f = getMe(), age = ageOf(f.birthday), rows = [];
+    openDetailId = null; pending = null;
+    if (f.birthday) rows.push(["生日", esc(fmtDate(f.birthday)) + (age !== null ? `（${age} 歲）` : "")]);
+    if (f.zodiac) rows.push(["星座", esc(f.zodiac)]);
+    if (f.interests) rows.push(["興趣", esc(f.interests).replace(/\n/g, "<br>")]);
+    if (f.hometown) rows.push(["哪裡人", esc(f.hometown)]);
+    if (f.residence) rows.push(["住哪邊", esc(f.residence)]);
+    if (f.upline) rows.push(["上手白金", esc(f.upline)]);
+    if (f.isDistributor) rows.push(["直銷商", `<span class="badge">是</span>`]);
+    if (f.isDistributor && f.distributorId) rows.push(["直銷商編號", esc(f.distributorId)]);
+    const roots = friends.filter(isRoot);
+    if (roots.length) rows.push(["我帶來的朋友", roots.map(k => `<button class="link" data-open="${esc(k.id)}">${esc(k.name)}</button>`).join("、")]);
+    sheet(`<h3>${esc(f.name || "我")} <span class="chip">我自己</span></h3>
+      ${rows.length ? `<dl class="dl">${rows.map(([l, v]) => `<dt>${l}</dt><dd>${v}</dd>`).join("")}</dl>` : `<p class="hint" style="margin:14px 0">還沒填我的資料，按下面的按鈕開始填。</p>`}
+      <div class="actions"><button class="btn primary" data-act="edit-me">編輯我的資料</button></div>`);
+  };
+  $("#sheetHost").addEventListener("click", e => { if (e.target.closest('[data-act="edit-me"]')) startEditMe(); });
+
+  // 用「新增朋友」的表單來編輯我的資料
+  function startEditMe() {
+    const f = getMe();
+    closeSheet();
+    editingId = ME;
+    for (const k of FORM_KEYS) form.elements[k].value = f[k] || "";
+    setDist(!!f.isDistributor);
+    zodiacTouched = !!f.zodiac && f.zodiac !== zodiacOf(f.birthday);
+    refField().hidden = true;
+    $("#editingBar").hidden = false; $("#editingName").textContent = "我自己";
+    $("#formTitle").textContent = "編輯我的資料"; $("#saveBtn").textContent = "儲存我的資料";
+    showTab("add");
+  }
+  const _endEdit = endEdit;
+  endEdit = function () { refField().hidden = false; _endEdit(); };
+  $("#cancelEdit").addEventListener("click", () => { refField().hidden = false; });
+
+  // 儲存我的資料（攔在原本的「新增朋友」之前）
+  document.addEventListener("submit", e => {
+    if (e.target !== form || editingId !== ME) return;
+    e.preventDefault(); e.stopPropagation();
+    const m = getMe();
+    for (const k of FORM_KEYS) m[k] = (form.elements[k].value || "").trim();
+    if (!m.name) { form.elements.name.focus(); toast("請先輸入名字"); return; }
+    if (!m.zodiac && m.birthday) m.zodiac = zodiacOf(m.birthday);
+    m.isDistributor = isDistOn(); m.updatedAt = Date.now();
+    if (!saveMe(m)) { toast("儲存失敗"); return; }
+    toast("已更新我的資料");
+    endEdit(); renderAll(); showTab("tree");
+  }, true);
+
+  // 匯出組織時，把我的資料一起帶給上線
+  exportOrg = async function () {
+    const me = ownerName();
+    const prof = getMe(); delete prof.id;
+    const data = { app: "friend-tree", version: 3, owner: { ...prof, name: me }, exportedAt: new Date().toISOString(), friends: friends.map(clean) };
+    const d = new Date(), stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+    const name = `${me.replace(/[\\/:*?"<>|]/g, "")}的組織-${stamp}.json`;
+    const file = new File([JSON.stringify(data, null, 2)], name, { type: "application/json" });
+    const done = msg => { ls.set(LS_BACKUP, String(Date.now())); renderBackupBanner(); closeSheet(); toast(msg); };
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); done("已匯出"); return; }
+    } catch (e) { if (e.name === "AbortError") return; }
+    const url = URL.createObjectURL(file);
+    const a = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    done("檔案已下載");
+  };
+
+  // 上線匯入時，用下線填的「我的資料」更新他在樹上的那一格
+  let importedProfile = null;
+  $("#importFile").addEventListener("change", async e => {
+    importedProfile = null;
+    try { const d = JSON.parse(await e.target.files[0].text()); importedProfile = d && d.owner; } catch (x) {}
+  }, true);
+  const _doImportOrg = doImportOrg;
+  doImportOrg = function () {
+    const sel = $("#imp-anchor").value, newName = ($("#imp-newname")?.value || "").trim();
+    _doImportOrg();
+    if (pending || !importedProfile) return; // 匯入沒有完成
+    const anchor = sel !== "__new" ? byId(sel)
+      : friends.filter(f => f.name === newName && !f.orgAnchor).sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (!anchor) return;
+    for (const k of ["birthday", "zodiac", "interests", "hometown", "residence", "upline", "distributorId"])
+      if (importedProfile[k]) anchor[k] = String(importedProfile[k]);
+    if (importedProfile.isDistributor !== undefined) anchor.isDistributor = !!importedProfile.isDistributor;
+    friends[friends.indexOf(anchor)] = clean(anchor);
+    persist(); renderAll();
+  };
+  /* ===== v1.2 結束 ===== */
+   setDist(false);
   renderAll();
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
